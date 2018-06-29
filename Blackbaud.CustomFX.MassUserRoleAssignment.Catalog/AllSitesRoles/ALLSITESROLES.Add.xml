@@ -1,0 +1,72 @@
+<AddDataFormTemplateSpec 
+    xmlns:c="bb_appfx_commontypes"
+    ID="60a00626-044b-49db-b657-47f85cecfd43"
+    Name="All Site Role Add Form"
+    Description="All Site Role Add Form"
+    Author="Nolan Regenwether"
+    RecordType="System Role"
+    DataFormInstanceID="44e51a0d-23f3-46b8-a201-d5df8112ea49"
+    xmlns="bb_appfx_adddataformtemplate"
+    >
+    <SPDataForm>
+        <SaveImplementation SPName="USR_USP_DATAFORMTEMPLATE_ADD_ALLSITESROLES">
+            <c:CreateProcedureSQL>
+<![CDATA[
+create procedure dbo.USR_USP_DATAFORMTEMPLATE_ADD_ALLSITESROLES
+(
+    @ID uniqueidentifier = null output,
+    @CHANGEAGENTID uniqueidentifier = null,
+    @SYSTEMROLEID uniqueidentifier
+)
+as
+
+set nocount on;
+
+DECLARE @EXISTS bit = 0
+
+if @ID is null
+    set @ID = newid()
+
+if @CHANGEAGENTID is null  
+    exec dbo.USP_CHANGEAGENT_GETORCREATECHANGEAGENT @CHANGEAGENTID output
+
+declare @CURRENTDATE datetime
+set @CURRENTDATE = getdate()
+
+begin try
+  SELECT @EXISTS = CASE COUNT(ID) WHEN 0 then 0 else 1 end 
+  FROM dbo.USR_ALLSITESROLES 
+  WHERE SYSTEMROLEID = @SYSTEMROLEID
+  
+  -- handle inserting the data
+  IF @EXISTS = 0 
+  BEGIN
+  
+	  insert into dbo.USR_ALLSITESROLES
+		  (ID, SYSTEMROLEID, ADDEDBYID, CHANGEDBYID, DATEADDED, DATECHANGED)
+      values
+		  (@ID, @SYSTEMROLEID, @CHANGEAGENTID, @CHANGEAGENTID, @CURRENTDATE, @CURRENTDATE)
+      
+  END
+end try
+
+begin catch
+    exec dbo.USP_RAISE_ERROR
+    return 1
+end catch
+
+return 0				
+
+]]>
+</c:CreateProcedureSQL>
+        </SaveImplementation>
+    </SPDataForm>
+    <c:FormMetaData FixedDialog="true">
+        <c:FormFields>
+          <c:FormField FieldID="SYSTEMROLEID" DataType="Guid" Required="true" Caption="Systemroleid" >
+            <c:SearchList SearchListID="10bb30b5-6f1f-44b3-9697-e3e174ed590c" EnableQuickFind="true" EnableAutoSearch="true" />
+          </c:FormField>
+        </c:FormFields>
+        <c:FormUIComponent />
+    </c:FormMetaData>
+</AddDataFormTemplateSpec>

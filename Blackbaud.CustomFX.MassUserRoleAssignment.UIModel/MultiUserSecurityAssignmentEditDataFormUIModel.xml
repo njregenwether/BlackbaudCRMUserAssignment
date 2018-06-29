@@ -1,0 +1,10 @@
+﻿<UIModelWizardMetadata>
+  <SpecFileName>UserRoleAdjustment.Edit.xml</SpecFileName>
+  <Namespace></Namespace>
+  <ClassName>MultiUserSecurityAssignmentEditDataFormUIModel</ClassName>
+  <HtmlInfo GenerateHtml="true">
+    <HtmlFile>MultiUserSecurityAssignmentEditDataForm.html</HtmlFile>
+    <HtmlFolder>htmlforms\custom\blackbaud.customfx.massuserroleassignment\</HtmlFolder>
+  </HtmlInfo>
+  <GenerateFromDatabase>true</GenerateFromDatabase>
+</UIModelWizardMetadata>

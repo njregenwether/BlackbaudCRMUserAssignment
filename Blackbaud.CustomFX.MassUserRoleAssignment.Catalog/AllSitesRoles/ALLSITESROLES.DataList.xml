@@ -1,0 +1,37 @@
+<DataListSpec 
+    xmlns:c="bb_appfx_commontypes"
+    ID="c6b2bb99-5005-437f-8f33-87a597cdfb41"
+    Name="All Site Roles Datalist"
+    Description="All Site Roles Datalist"
+    Author="Nolan Regenwether"
+    xmlns="bb_appfx_datalist"
+    >
+    <SPDataList SPName="USR_USP_DATALIST_ALLSITESROLES">
+        <c:CreateProcedureSQL>
+<![CDATA[
+create procedure dbo.USR_USP_DATALIST_ALLSITESROLES
+as
+	set nocount on;
+
+	select 
+        asr.[ID],
+        asr.[SYSTEMROLEID], 
+        s.NAME as SYSTEMROLENAME
+	from 
+        dbo.USR_ALLSITESROLES asr
+  join
+        dbo.SYSTEMROLE s
+  on
+        s.ID = asr.SYSTEMROLEID
+
+]]>
+</c:CreateProcedureSQL>
+    </SPDataList>
+    <Output>
+        <OutputFields>
+            <OutputField FieldID="ID" Caption="ID" IsHidden="true" DataType="Guid" />
+            <OutputField FieldID="SYSTEMROLEID" Caption="Systemroleid" DataType="Guid" IsHidden="true"/>
+            <OutputField FieldID="SYSTEMROLENAME" Caption="System Role Name" DataType="String" />
+        </OutputFields>
+    </Output>
+</DataListSpec>

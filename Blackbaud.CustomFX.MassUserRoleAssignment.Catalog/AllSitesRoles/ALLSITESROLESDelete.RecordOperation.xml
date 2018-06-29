@@ -1,0 +1,35 @@
+<RecordOperationSpec 
+    xmlns:c="bb_appfx_commontypes"
+    ID="51e3c5da-0bb2-4add-83a1-345ac1c949eb"
+    Name="All Site System Roles Delete"
+    Description="Delete role from all sites roles table"
+    Author="Nolan Regenwether"
+    RecordType="System Role"
+    OperationType="Delete"
+    xmlns="bb_appfx_recordoperation"
+    >
+    <SPRecord>
+        <SPOperationImplementation SPName="USR_USP_ALLSITESROLES_DELETE">
+            <c:CreateProcedureSQL>
+<![CDATA[
+create procedure dbo.USR_USP_ALLSITESROLES_DELETE
+(
+	@ID uniqueidentifier,
+	@CHANGEAGENTID uniqueidentifier
+)
+as begin
+	--check deletion rules, if any
+
+	-- use the system generated delete routine to allow proper recording of the deleting agent
+	exec USP_USR_ALLSITESROLES_DELETEBYID_WITHCHANGEAGENTID @ID, @CHANGEAGENTID
+	return 0;
+	
+end
+]]>
+</c:CreateProcedureSQL>
+        </SPOperationImplementation>
+    </SPRecord>
+    <Prompt>
+        <StandardPrompt Text="Are you sure you want to delete this role?" />
+    </Prompt>
+</RecordOperationSpec>

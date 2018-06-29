@@ -1,0 +1,84 @@
+﻿<QueryViewSpec
+	xmlns="bb_appfx_queryview"
+	xmlns:c="bb_appfx_commontypes" 
+	ID="4edcaa97-73a8-454b-b1d4-d39c677dff9a"
+	Name="App Users Roles Query"
+	Description="A view defined for querying on app users roles records"
+	Author="Dignity Health"
+	PrimaryKeyField="ID"
+	RecordType="App Users Roles"
+	>
+
+  <TVFImplementation FunctionName="USR_TVF_APPUSERROLES" >
+    <CreateFunctionSQL>
+      <![CDATA[
+      CREATE FUNCTION USR_TVF_APPUSERROLES()
+      RETURNS @SYSROLEAPPUSER TABLE (ID int, APPUSER nvarchar(255), SYSTEMROLE nvarchar(255), SECURITYMODE nvarchar(40), SITEID nvarchar(100), DATEADDED datetime, ADDEDBY nvarchar(128), DATECHANGED datetime, CHANGEDBY nvarchar(128))
+      AS
+      BEGIN
+      INSERT INTO @SYSROLEAPPUSER (ID, APPUSER, SYSTEMROLE, SECURITYMODE, SITEID, DATEADDED, ADDEDBY, DATECHANGED, CHANGEDBY)
+      SELECT row_number() over (ORDER BY au.DISPLAYNAME asc, sr.NAME asc, s.ID asc) as ID, 
+        au.DISPLAYNAME, sr.NAME, srau.SECURITYMODE, s.SITEID, 
+        CASE WHEN sraus.ID IS NULL THEN srau.DATEADDED ELSE sraus.DATEADDED END as DATEADDED, 
+        CASE WHEN sraus.ID IS NULL THEN sraddedbyau.USERNAME ELSE addedbyau.USERNAME END as ADDEDBY, 
+        CASE WHEN sraus.ID IS NULL THEN srau.DATECHANGED ELSE sraus.DATECHANGED END as DATECHANGED, 
+        CASE WHEN sraus.ID IS NULL THEN srchangedbyid.USERNAME ELSE changedbyid.USERNAME END as CHANGEDBY
+      FROM dbo.APPUSER au
+      JOIN dbo.SYSTEMROLEAPPUSER srau
+	      ON srau.APPUSERID = au.ID 
+      JOIN dbo.SYSTEMROLE sr 
+	      ON sr.ID = srau.SYSTEMROLEID 
+      LEFT OUTER JOIN dbo.SYSTEMROLEAPPUSERSITE sraus 
+	      ON sraus.SYSTEMROLEAPPUSERID = srau.ID
+      LEFT OUTER JOIN dbo.SITE s 
+	      ON s.ID = sraus.SITEID
+      LEFT OUTER JOIN dbo.CHANGEAGENT addedbyau
+	      ON addedbyau.ID = sraus.ADDEDBYID
+      LEFT OUTER JOIN dbo.CHANGEAGENT changedbyid 
+	      ON changedbyid.ID = sraus.CHANGEDBYID
+      LEFT OUTER JOIN dbo.CHANGEAGENT sraddedbyau
+	      ON sraddedbyau.ID = srau.ADDEDBYID
+      LEFT OUTER JOIN dbo.CHANGEAGENT srchangedbyid 
+	      ON srchangedbyid.ID = srau.CHANGEDBYID
+
+      RETURN;
+
+      END
+      
+      ]]>
+    </CreateFunctionSQL>
+  </TVFImplementation>
+
+  <Output>
+    <OutputFields>
+      <OutputField Caption="System record ID" Name="ID" DataType="Integer" />
+      <OutputField Name="APPUSER"      Caption="App User" DataType="String" />
+      <OutputField Name="SYSTEMROLE"   Caption="System Role"        DataType="String" />
+      <OutputField Name="SECURITYMODE" Caption="Security Mode" DataType="String" />
+      <OutputField Name="SITEID"       Caption="Site" DataType="String" />
+      <OutputField Name="DATEADDED"    Caption="Date Added"        DataType="Date" />
+      <OutputField Name="ADDEDBY"      Caption="Added By"        DataType="String" />
+      <OutputField Name="DATECHANGED"  Caption="Date Changed"        DataType="Date" />
+      <OutputField Name="CHANGEDBY"    Caption="Changed By"        DataType="String" />
+    </OutputFields>
+  </Output>
+  
+  <ListBuilder PagingStyle="DatabaseServer">
+    <Columns>
+      <Column Name="ID" IsDefaultColumn="false" />
+      <Column Name="APPUSER"  IsDefaultColumn="true" />
+      <Column Name="SYSTEMROLE"   IsDefaultColumn="true" />
+      <Column Name="SECURITYMODE" IsDefaultColumn="true" />
+      <Column Name="SITEID"       IsDefaultColumn="true" />
+      <Column Name="DATEADDED"    IsDefaultColumn="true" />
+      <Column Name="ADDEDBY"      IsDefaultColumn="true" />
+      <Column Name="DATECHANGED"  IsDefaultColumn="true" />
+      <Column Name="CHANGEDBY"    IsDefaultColumn="true" />
+    </Columns>
+    <SortOptions DefaultSortColumn="APPUSER" DefaultSortDirection="Ascending" />
+  </ListBuilder>
+
+
+
+</QueryViewSpec>
+

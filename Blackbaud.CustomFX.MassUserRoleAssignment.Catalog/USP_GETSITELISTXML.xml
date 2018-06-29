@@ -1,0 +1,33 @@
+﻿<SQLStoredProcedureSpec
+	xmlns="bb_appfx_sqlstoredprocedure"
+	xmlns:c="bb_appfx_commontypes" 
+	ID="bd9638a1-4f9c-4b47-bf8c-7715c5b76c9c"
+	Name="Get Site List XML"
+	Description="Get List of Sites"
+	Author="Nolan Regenwether"
+	SPName="USR_USP_GETSITELISTXML"
+	>
+
+	<CreateProcedureSQL>
+		<![CDATA[
+create procedure dbo.USR_USP_GETSITELISTXML
+(
+	@SITELIST xml = null output
+)
+as
+begin
+	SELECT @SITELIST = (SELECT  ID, NAME as SITENAME, CAST(0 as bit) SELECTED 
+	FROM 
+	(
+	SELECT TOP 100 PERCENT ROW_NUMBER() OVER ( ORDER BY NAME ASC) + 1 as rownum, ID, NAME 
+	FROM dbo.SITE 
+	ORDER BY NAME ASC
+	) sns
+	ORDER BY rownum asc
+	FOR XML PATH('Item'), ROOT('SITELIST')
+	)
+end
+		]]>
+	</CreateProcedureSQL>
+
+</SQLStoredProcedureSpec>

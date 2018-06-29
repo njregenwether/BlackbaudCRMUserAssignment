@@ -1,0 +1,34 @@
+﻿<SQLStoredProcedureSpec
+	xmlns="bb_appfx_sqlstoredprocedure"
+	xmlns:c="bb_appfx_commontypes" 
+	ID="2a8ef731-0d2f-4153-b5f5-e18ef015a7d4"
+	Name="Get User List XML"
+	Description="Gets a List of Users"
+	Author="Nolan Regenwether"
+	SPName="USR_USP_GETUSERLISTXML"
+	>
+
+	<CreateProcedureSQL>
+		<![CDATA[
+create procedure dbo.USR_USP_GETUSERLISTXML
+(
+	@USERLIST xml = null output
+)
+as 
+begin
+	SELECT @USERLIST = (SELECT  ID, USERNAME, CAST(0 as bit) SELECTED 
+	FROM 
+	( 
+	SELECT TOP 100 PERCENT ID, USERNAME 
+	FROM dbo.APPUSER 
+	WHERE USERNAME IS NOT NULL AND USERNAME <> '' AND ISSYSTEM = 0 AND ISSYSADMIN = 0 
+	ORDER BY USERNAME ASC
+	) sdf
+	ORDER BY USERNAME ASC
+	FOR XML PATH('Item'), ROOT('USERLIST')
+	)
+end
+		]]>
+	</CreateProcedureSQL>
+
+</SQLStoredProcedureSpec>

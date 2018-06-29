@@ -1,0 +1,21 @@
+﻿<TableSpec 
+	xmlns="bb_appfx_table"
+	xmlns:c="bb_appfx_commontypes" 
+	ID="2602c339-85fc-40d1-aceb-ac1888f11d1c"
+	Name="All Sites Roles Table"
+	Description="Stores information about allsitesroles records"
+	Author="Nolan Regenwether"
+	Tablename="USR_ALLSITESROLES"		   
+	IsBuiltIn="false"
+	>
+
+  <!-- This table is a collection of system roles that should always be assigned with "all sites" meaning that 
+       no entry should be made in the systemroleappusersite table for these roles when loading them in the gui.
+  -->
+
+	<!-- define fields on the table -->
+	<Fields>
+    <GuidField Name="SYSTEMROLEID" Description="System Role ID" IsUnique="true" Required="true"/>
+	</Fields>
+
+</TableSpec>

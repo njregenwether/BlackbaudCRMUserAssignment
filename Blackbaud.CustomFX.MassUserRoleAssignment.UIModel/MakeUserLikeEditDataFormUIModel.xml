@@ -1,0 +1,10 @@
+﻿<UIModelWizardMetadata>
+  <SpecFileName>MakeUserLike.Edit.xml</SpecFileName>
+  <Namespace></Namespace>
+  <ClassName>MakeUserLikeEditDataFormUIModel</ClassName>
+  <HtmlInfo GenerateHtml="true">
+    <HtmlFile>MakeUserLikeEditDataForm.html</HtmlFile>
+    <HtmlFolder>htmlforms\custom\blackbaud.customfx.massuserroleassignment\</HtmlFolder>
+  </HtmlInfo>
+  <GenerateFromDatabase>true</GenerateFromDatabase>
+</UIModelWizardMetadata>

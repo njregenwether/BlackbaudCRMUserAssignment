@@ -1,0 +1,99 @@
+﻿<PageDefinitionSpec
+    xmlns="bb_appfx_pagedefinition"
+    xmlns:c="bb_appfx_commontypes"
+    ID="3233efc0-fb4d-4d2e-b926-cfa89546ee9d"
+    Name="User Role Adjustment Page"
+    Description="User Role Adjustment Page"
+    Author="Nolan Regenwether"
+    >
+
+  <!-- Note:  A page can optionally have a view form associated with it as the "Expression form".  While implemented as a view data form,
+	this form has no UI in this context, and is simply used as a way of loading additional information associated with the page.  The fields
+	returned by the expression form can be used as expressions in various properties throughout the page.  To specify an expression form for this
+	page, add the following attribute:		ExpressionDataFormID="<some guid>"-->
+
+  <!-- define how the page header should appear -->
+  <PageHeader Caption="User Role Adjustment Page" />
+
+  <SummarySection Caption="" ID="32578364-6ec1-417e-9898-d5d85ba6a0cf" HideCaption="true" HideRefresh="true" >
+    <DataForm ID="810fc65c-65eb-4155-b9a5-76de8d48cd67" IsScrollable="true"/>
+  </SummarySection>
+
+  <!-- define the tabs for the page - note that if only one tab is present, then that tab's sections are promoted to the page level (ie., the tab
+	itself isn't shown -->
+  <Tabs>
+    <Tab Caption="AppUsers and Roles" ID="e42ee010-e84b-42b9-93b9-823c6ec8d034" >
+      <Sections>
+        <Section ID="b96b37f2-15f1-41c3-96e3-74b152b24145" Caption="AppUsers and Roles" >
+          <ListBuilder QueryViewID="4edcaa97-73a8-454b-b1d4-d39c677dff9a" AllowSearch="true" AllowSave="true" AutoDisplayFilters="true" AllowColumnFiltering="true" AllowColumnConfiguration="true" ItemsPerPage="100">
+            <RenderStyle>
+              <StandardView AutoSize="true"/>
+            </RenderStyle>
+          </ListBuilder>
+        </Section>
+      </Sections>
+    </Tab>
+    <Tab Caption="Configuration Items" ID="05964a95-821f-44f1-9121-c2da50fb6ff1">
+      <Sections>
+        <Section ID="fcc1709e-9c78-454f-85c9-7d943df9f601"  Caption="Roles with All Sites">
+          <DataList ID="c6b2bb99-5005-437f-8f33-87a597cdfb41" >
+            <RenderStyle>
+              <StandardView />
+            </RenderStyle>
+          </DataList>
+          <Actions>
+            <Action ID="f5ded5ec-335e-45cc-8ac9-46884071b68e" Caption="Add Role">
+              <c:ShowAddDataForm DataFormID="44e51a0d-23f3-46b8-a201-d5df8112ea49" />
+            </Action>
+            <Action ID="c8eea32f-6219-4302-a923-89e5421b09f0" Caption="Remove System Role">
+              <c:ExecuteRecordOperation RecordOperationID="51e3c5da-0bb2-4add-83a1-345ac1c949eb" ShowPrompt="true" >
+                <c:ActionContext>
+                  <c:SectionField>ID</c:SectionField>
+                </c:ActionContext>
+                <c:AllowsMultiSelect>
+                  <c:Prompt>You're about to delete multiple roles from the all sites roles list, you sure?</c:Prompt>
+                </c:AllowsMultiSelect>
+              </c:ExecuteRecordOperation>
+            </Action>
+          </Actions>
+        </Section>
+        <Section ID="538861b8-7e98-4a4e-8dbc-3e4667f98527" Caption="Roles with No Sites">
+          <DataList ID="b96aa6ac-0624-4755-887e-e6ae9f0bda0b" >
+            <RenderStyle>
+              <StandardView />
+            </RenderStyle>
+          </DataList>
+          <Actions >
+            <Action ID="4c3f48b1-b37c-4aec-b12b-d328d99d8572" Caption="Add role">
+              <c:ShowAddDataForm DataFormID="0ba46faa-d240-4704-a131-66f48f133ef0" />
+            </Action>
+            <Action ID="503092c6-93d1-45a6-bdca-8366e8b16932" Caption="Remove Role">
+              <c:ExecuteRecordOperation RecordOperationID="6400714b-7e78-45d1-ae5b-e5d1bec3173d" ShowPrompt="true" >
+                <c:ActionContext>
+                  <c:SectionField>ID</c:SectionField>
+                </c:ActionContext>
+                <c:AllowsMultiSelect>
+                  <c:Prompt>You're about to delete multiple roles from the all sites roles list, you sure?</c:Prompt>
+                </c:AllowsMultiSelect>
+              </c:ExecuteRecordOperation>
+            </Action>
+          </Actions>
+        </Section>
+      </Sections>
+    </Tab>
+  </Tabs>
+
+
+  <PageActionGroups>
+    <PageActionGroup ID="28582e1e-0906-492d-bdf8-eb6780248cbf" Caption="Tasks" Visible="True">
+      <Actions>
+        <Action ID="f888e766-1f15-4728-86f5-f7e84dbcc350" Enabled="True" Caption="Assign Roles to Users"  ImageKey="catalog:Blackbaud.AppFx.Security.Catalog.dll,Blackbaud.AppFx.Security.Catalog.application_users.png" ToolTipText="Assign Rolls to Users">
+          <c:ShowDataForm DataFormID="f08e51b2-dbdb-435f-8c4a-ed4644913aac"></c:ShowDataForm>
+        </Action>
+        <Action ID="a7b91b95-372d-4211-b20f-e0f73057080c" Enabled="True" Caption="Assign Roles to Users (Make Like)" ImageKey="catalog:Blackbaud.AppFx.Security.Catalog.dll,Blackbaud.AppFx.Security.Catalog.application_users.png" ToolTipText="Make a set of users like another user.">
+          <c:ShowDataForm DataFormID="4e8379d7-c922-4398-8cb0-bf2b0ff232ae"></c:ShowDataForm>
+        </Action>
+      </Actions>
+    </PageActionGroup>
+  </PageActionGroups>
+</PageDefinitionSpec>

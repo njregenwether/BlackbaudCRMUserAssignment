@@ -1,0 +1,10 @@
+﻿<UIModelWizardMetadata>
+  <SpecFileName>UserRoleAssignmentSummarySection.View.xml</SpecFileName>
+  <Namespace></Namespace>
+  <ClassName>UserRoleAssignmentSummarySectionViewDataFormUIModel</ClassName>
+  <HtmlInfo GenerateHtml="true">
+    <HtmlFile>UserRoleAssignmentSummarySectionViewDataForm.html</HtmlFile>
+    <HtmlFolder>htmlforms\custom\blackbaud.customfx.massuserroleassignment\</HtmlFolder>
+  </HtmlInfo>
+  <GenerateFromDatabase>true</GenerateFromDatabase>
+</UIModelWizardMetadata>

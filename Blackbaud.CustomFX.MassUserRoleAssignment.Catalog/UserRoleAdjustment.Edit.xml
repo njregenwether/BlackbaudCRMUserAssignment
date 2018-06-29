@@ -1,0 +1,557 @@
+<EditDataFormTemplateSpec 
+    xmlns="bb_appfx_editdataformtemplate"
+    xmlns:c="bb_appfx_commontypes"
+    ID="a3a1b793-0d45-42e2-84ce-7977f7252a04"
+    Name="Multi User Security Assignment Edit Data Form"
+    Description="A data form for editing multi user security assignment records"
+    Author="Nolan Regenwether"
+    DataFormInstanceID="f08e51b2-dbdb-435f-8c4a-ed4644913aac"
+    FormHeader="Assign Roles and Sites to Users"
+    HasID="false"
+    >
+
+	<SPDataForm>
+
+		<!-- define the edit load SP, which is used to load the data for the form -->
+		<LoadImplementation SPName="USR_USP_DATAFORMTEMPLATE_EDITLOAD_MULTIUSERSECURITYASSIGNMENT">
+			<c:CreateProcedureSQL>
+				<![CDATA[
+create procedure dbo.USR_USP_DATAFORMTEMPLATE_EDITLOAD_MULTIUSERSECURITYASSIGNMENT
+(
+    @DATALOADED bit = 0 output,
+    @TSLONG bigint = 0 output,
+	@OPERATION int = null output, 
+	@TEMPLATE uniqueidentifier = null output,
+	@USERLIST xml = null output,
+  @SITEFILTERMODE int = null output, 
+	@SITELIST xml = null output,
+	@ROLELIST xml = null output
+)
+as
+
+	set nocount on;
+
+	-- be sure to set these, in case the select returns no rows
+	set @DATALOADED = 0
+	set @TSLONG = 0
+
+	Exec dbo.USR_USP_GETUSERLISTXML @USERLIST OUT; 
+	Exec dbo.USR_USP_GETSITELISTXML @SITELIST OUT;
+	Exec dbo.USR_USP_GETROLELISTXML @ROLELIST OUT;
+	
+	SET @OPERATION = null
+	SET @TEMPLATE = null
+  
+
+	set @DATALOADED = 1
+	
+
+	return 0;
+				]]>
+			</c:CreateProcedureSQL>
+		</LoadImplementation>
+
+		<SaveImplementation SPName="USR_USP_DATAFORMTEMPLATE_EDIT_MULTIUSERSECURITYASSIGNMENT">
+			<c:CreateProcedureSQL>
+				<![CDATA[
+create procedure dbo.USR_USP_DATAFORMTEMPLATE_EDIT_MULTIUSERSECURITYASSIGNMENT 
+(
+	@CHANGEAGENTID uniqueidentifier = null,
+	@OPERATION integer,
+	@TEMPLATE uniqueidentifier,
+	@USERLIST xml, 
+	@SITEFILTERMODE int, -- 2 is selected sites, 1 is app user site 
+	@SITELIST xml, 
+	@ROLELIST xml
+)
+as
+
+	set nocount on;
+
+	if @CHANGEAGENTID is null  
+		exec dbo.USP_CHANGEAGENT_GETORCREATECHANGEAGENT @CHANGEAGENTID output
+				
+	declare @CURRENTDATE datetime
+	set @CURRENTDATE = getdate()
+  
+
+	begin try
+		if @CHANGEAGENTID is null  
+			exec dbo.USP_CHANGEAGENT_GETORCREATECHANGEAGENT @CHANGEAGENTID output
+      
+      
+    Declare @SELECTEDUSERS table(APPUSERID uniqueidentifier, SELECTED bit)
+  
+    INSERT INTO @SELECTEDUSERS (APPUSERID, SELECTED)
+    select 
+	  [USER].value('ID[1]', 'uniqueidentifier') ID, 
+	  [USER].value( 'SELECTED[1]', 'bit')  SELECTED
+    FROM @USERLIST.nodes('//USERLIST/ITEM') as U([USER])
+
+
+    DECLARE @SELECTEDROLES table (ROLEID uniqueidentifier, SELECTED BIT)
+    INSERT INTO @SELECTEDROLES (ROLEID, SELECTED)
+    select 
+	    [ROLES].value('ID[1]','uniqueidentifier') ROLEID, 
+	    [ROLES].value('SELECTED[1]', 'bit') SELECTED
+    FROM @ROLELIST.nodes('//ROLELIST/ITEM') as R(ROLES)
+
+	
+
+    DECLARE @ALLSITESROLES table (ROLEID uniqueidentifier) 
+
+    INSERT INTO @ALLSITESROLES (ROLEID) 
+    SELECT SYSTEMROLEID
+    FROM dbo.USR_ALLSITESROLES
+    
+    DECLARE @NOSITESROLES table (ROLEID uniqueidentifier) 
+
+    INSERT INTO @NOSITESROLES (ROLEID) 
+    SELECT SYSTEMROLEID
+    FROM dbo.USR_NOSITESROLES
+
+    DELETE sr 
+	  FROM @SELECTEDROLES sr 
+	  WHERE sr.SELECTED = 0
+
+	  DELETE su 
+	  FROM @SELECTEDUSERS su 
+	  WHERE su.SELECTED = 0
+    
+    
+    DECLARE @SELECTEDSITES TABLE ( SITEID uniqueidentifier, SELECTED bit)
+    
+
+    DELETE sr 
+	  FROM @SELECTEDROLES sr 
+	  WHERE sr.SELECTED = 0
+
+	  DELETE su 
+	  FROM @SELECTEDUSERS su 
+	  WHERE su.SELECTED = 0
+    
+
+	IF @SITEFILTERMODE = 2 
+	BEGIN
+		INSERT INTO @SELECTEDSITES (SITEID, SELECTED)
+		select 
+			[SITES].value('ID[1]','uniqueidentifier') ROLEID, 
+			[SITES].value('SELECTED[1]', 'bit') SELECTED
+		FROM @SITELIST.nodes('//SITELIST/ITEM') as S(SITES)
+
+		DELETE ss 
+		FROM @SELECTEDSITES ss 
+		WHERE ss.SELECTED = 0
+
+	END
+
+
+	DECLARE @SITEUSERROLETABLE TABLE (APPUSERID uniqueidentifier, ROLEID uniqueidentifier, SITEID uniqueidentifier, USERHASROLE bit, USERHASROLESITE bit, USERHASROLEOTHERSITE bit)
+		
+		IF @SITEFILTERMODE = 2 -- Selected sites
+		BEGIN
+			INSERT INTO @SITEUSERROLETABLE(APPUSERID, ROLEID, SITEID, USERHASROLE, USERHASROLESITE, USERHASROLEOTHERSITE)
+			SELECT 
+				APPUSERID
+				,ROLEID 
+				,SITEID
+				,0
+				,0
+				,0
+			FROM (
+				SELECT 
+					SU.APPUSERID
+					,SR.ROLEID
+					,SS.SITEID 
+				FROM 
+					@SELECTEDUSERS SU
+					CROSS JOIN @SELECTEDROLES SR
+				CROSS JOIN @SELECTEDSITES SS
+			) SUMMARIZED
+					GROUP BY 
+				APPUSERID
+				, ROLEID 
+				, SITEID
+
+
+
+		END
+
+
+		IF @SITEFILTERMODE = 1
+		BEGIN
+			  INSERT INTO @SITEUSERROLETABLE(APPUSERID, ROLEID, SITEID, USERHASROLE, USERHASROLESITE, USERHASROLEOTHERSITE)
+			SELECT 
+				APPUSERID
+				,ROLEID 
+				,SITEID
+				,0
+				,0
+				,0
+			FROM (
+				SELECT 
+					SU.APPUSERID
+					,SR.ROLEID 
+					,AU.SITEID
+				FROM 
+					@SELECTEDUSERS SU
+					CROSS JOIN @SELECTEDROLES SR
+				JOIN dbo.APPUSER au 
+				ON au.ID = su.APPUSERID 
+			) SUMMARIZED
+					GROUP BY 
+				APPUSERID
+				, ROLEID 
+				, SITEID
+
+
+
+
+
+
+		END
+
+			UPDATE srt
+				SET srt.USERHASROLE = 1 
+			FROM @SITEUSERROLETABLE srt 
+			JOIN dbo.SYSTEMROLEAPPUSER sr 
+				ON sr.APPUSERID = srt.APPUSERID AND sr.SYSTEMROLEID = srt.ROLEID
+
+			UPDATE srt
+				SET srt.USERHASROLESITE = 1 
+			FROM @SITEUSERROLETABLE srt 
+			JOIN dbo.SYSTEMROLEAPPUSER sr 
+				ON sr.APPUSERID = srt.APPUSERID AND sr.SYSTEMROLEID = srt.ROLEID
+			JOIN dbo.SYSTEMROLEAPPUSERSITE sraus
+				ON sraus.SYSTEMROLEAPPUSERID = sr.ID AND sraus.SITEID = srt.SITEID
+
+			UPDATE srt
+				SET srt.USERHASROLEOTHERSITE = 1 
+			FROM @SITEUSERROLETABLE srt 
+			JOIN dbo.SYSTEMROLEAPPUSER sr 
+				ON sr.APPUSERID = srt.APPUSERID AND sr.SYSTEMROLEID = srt.ROLEID
+			JOIN dbo.SYSTEMROLEAPPUSERSITE sraus
+				ON sraus.SYSTEMROLEAPPUSERID = sr.ID AND sraus.SITEID <> srt.SITEID
+
+
+
+
+
+	IF @OPERATION = 1 
+	BEGIN
+		
+			
+					-- Add the role where it doesn't exist
+			INSERT INTO dbo.SYSTEMROLEAPPUSER (
+				SYSTEMROLEID
+				,APPUSERID
+				,ADDEDBYID
+				,CHANGEDBYID
+				,DATEADDED
+				,DATECHANGED
+				,FROMROLESYNC
+				,SECURITYMODECODE
+				,CONSTITUENTSECURITYMODECODE
+				,ACCOUNTINGELEMENTSECURITYMODECODE)
+			SELECT 
+				srt.ROLEID
+				,srt.APPUSERID 
+				,@CHANGEAGENTID
+				,@CHANGEAGENTID
+				,@CURRENTDATE
+				,@CURRENTDATE
+				,0
+				,2
+				,0
+				,0
+			FROM (
+				SELECT DISTINCT ROLEID, APPUSERID
+				FROM
+				@SITEUSERROLETABLE) srt
+			LEFT OUTER JOIN @ALLSITESROLES asr 
+				ON asr.ROLEID = srt.ROLEID 
+			LEFT OUTER JOIN @NOSITESROLES nsr
+				ON nsr.ROLEID = srt.ROLEID
+			LEFT OUTER JOIN dbo.SYSTEMROLEAPPUSER srau 
+				ON srau.APPUSERID = srt.APPUSERID 
+					AND srau.SYSTEMROLEID = srt.ROLEID
+			WHERE asr.ROLEID IS NULL 
+				and nsr.ROLEID IS NULL
+				AND srau.ID IS NULL
+		
+
+
+
+			INSERT INTO dbo.SYSTEMROLEAPPUSERSITE 
+			(
+				SYSTEMROLEAPPUSERID, 
+				SITEID, 
+				ADDEDBYID, 
+				CHANGEDBYID, 
+				DATEADDED, 
+				DATECHANGED
+			)
+			SELECT 
+				srau.ID, 
+				srt.SITEID, 
+				@CHANGEAGENTID, 
+				@CHANGEAGENTID, 
+				@CURRENTDATE, 
+				@CURRENTDATE
+			FROM @SITEUSERROLETABLE srt 
+			JOIN dbo.SYSTEMROLEAPPUSER srau 
+				ON srau.SYSTEMROLEID = srt.ROLEID 
+					AND srau.APPUSERID = srt.APPUSERID
+			LEFT OUTER JOIN dbo.SYSTEMROLEAPPUSERSITE sraus
+				ON sraus.SITEID = srt.SITEID 
+					AND sraus.SYSTEMROLEAPPUSERID = srau.ID
+			LEFT OUTER JOIN @ALLSITESROLES asr 
+				ON asr.ROLEID = srt.ROLEID
+      LEFT OUTER JOIN @NOSITESROLES nsr 
+        ON nsr.ROLEID = srt.ROLEID
+			WHERE srt.USERHASROLESITE = 0
+				AND asr.ROLEID IS NULL 
+        AND nsr.ROLEID IS NULL
+				AND sraus.ID IS NULL
+
+		-- Handle all sites roles
+
+		INSERT INTO dbo.SYSTEMROLEAPPUSER (
+				SYSTEMROLEID
+				,APPUSERID
+				,ADDEDBYID
+				,CHANGEDBYID
+				,DATEADDED
+				,DATECHANGED
+				,FROMROLESYNC
+				,SECURITYMODECODE
+				,CONSTITUENTSECURITYMODECODE
+				,ACCOUNTINGELEMENTSECURITYMODECODE)
+			SELECT 
+				srt.ROLEID
+				,srt.APPUSERID 
+				,@CHANGEAGENTID
+				,@CHANGEAGENTID
+				,@CURRENTDATE
+				,@CURRENTDATE
+				,0
+				,0
+				,0
+				,0
+			FROM (
+				SELECT DISTINCT ROLEID, APPUSERID
+				FROM
+				@SITEUSERROLETABLE) srt
+			LEFT OUTER JOIN @ALLSITESROLES asr 
+				ON asr.ROLEID = srt.ROLEID
+			LEFT OUTER JOIN @NOSITESROLES nsr
+				ON nsr.ROLEID = srt.ROLEID
+			LEFT OUTER JOIN dbo.SYSTEMROLEAPPUSER srau 
+				ON srau.APPUSERID = srt.APPUSERID 
+					AND srau.SYSTEMROLEID = srt.ROLEID
+			WHERE asr.ROLEID IS NOT NULL 
+				AND srau.ID IS NULL
+				AND nsr.ROLEID IS NULL
+        
+        
+      
+      -- Handle no sites roles
+
+		INSERT INTO dbo.SYSTEMROLEAPPUSER (
+				SYSTEMROLEID
+				,APPUSERID
+				,ADDEDBYID
+				,CHANGEDBYID
+				,DATEADDED
+				,DATECHANGED
+				,FROMROLESYNC
+				,SECURITYMODECODE
+				,CONSTITUENTSECURITYMODECODE
+				,ACCOUNTINGELEMENTSECURITYMODECODE)
+			SELECT 
+				srt.ROLEID
+				,srt.APPUSERID 
+				,@CHANGEAGENTID
+				,@CHANGEAGENTID
+				,@CURRENTDATE
+				,@CURRENTDATE
+				,0
+				,1
+				,0
+				,0
+			FROM (
+				SELECT DISTINCT ROLEID, APPUSERID
+				FROM
+				@SITEUSERROLETABLE) srt
+			LEFT OUTER JOIN @ALLSITESROLES asr 
+				ON asr.ROLEID = srt.ROLEID
+			LEFT OUTER JOIN @NOSITESROLES nsr
+				ON nsr.ROLEID = srt.ROLEID
+			LEFT OUTER JOIN dbo.SYSTEMROLEAPPUSER srau 
+				ON srau.APPUSERID = srt.APPUSERID 
+					AND srau.SYSTEMROLEID = srt.ROLEID
+			WHERE asr.ROLEID IS NULL 
+				AND srau.ID IS NULL
+				AND nsr.ROLEID IS NOT NULL
+
+	END
+
+
+-- Delete 
+-- Delete anything that has all sites. 
+-- Delete anything else that is site specific 
+
+	IF @OPERATION = 2
+	BEGIN
+
+			DELETE sraus 
+			FROM @SITEUSERROLETABLE srt
+			JOIN dbo.SYSTEMROLEAPPUSER srau
+				ON srau.APPUSERID = srt.APPUSERID 
+					AND srau.SYSTEMROLEID = srt.ROLEID
+			JOIN dbo.SYSTEMROLEAPPUSERSITE sraus 
+				ON sraus.SYSTEMROLEAPPUSERID = srau.ID 
+			JOIN @ALLSITESROLES asr 
+				ON asr.ROLEID = srau.SYSTEMROLEID 
+
+			DELETE srau 
+			FROM @SITEUSERROLETABLE srt
+			JOIN dbo.SYSTEMROLEAPPUSER srau
+				ON srau.APPUSERID = srt.APPUSERID 
+					AND srau.SYSTEMROLEID = srt.ROLEID
+			JOIN @ALLSITESROLES asr 
+				ON asr.ROLEID = srau.SYSTEMROLEID 
+
+
+
+
+			DELETE sraus 
+			FROM @SITEUSERROLETABLE srt
+			JOIN dbo.SYSTEMROLEAPPUSER srau
+				ON srau.APPUSERID = srt.APPUSERID 
+					AND srau.SYSTEMROLEID = srt.ROLEID
+			LEFT OUTER JOIN dbo.SYSTEMROLEAPPUSERSITE sraus 
+				ON sraus.SYSTEMROLEAPPUSERID = srau.ID 
+					AND sraus.SITEID = srt.SITEID
+			LEFT OUTER JOIN @ALLSITESROLES asr 
+				ON asr.ROLEID = srau.SYSTEMROLEID 
+			WHERE asr.ROLEID IS NULL
+
+
+			DELETE srau 
+			FROM @SITEUSERROLETABLE srt
+			JOIN dbo.SYSTEMROLEAPPUSER srau
+				ON srau.APPUSERID = srt.APPUSERID 
+					AND srau.SYSTEMROLEID = srt.ROLEID
+			LEFT OUTER JOIN dbo.SYSTEMROLEAPPUSERSITE sraus 
+				ON sraus.SYSTEMROLEAPPUSERID = srau.ID 
+			LEFT OUTER JOIN @ALLSITESROLES asr 
+				ON asr.ROLEID = srau.SYSTEMROLEID
+			WHERE sraus.ID IS NULL
+				AND asr.ROLEID IS NULL
+
+
+END
+
+
+      
+      
+      
+      
+	end try
+	begin catch
+		exec dbo.USP_RAISE_ERROR
+		return 1
+	end catch
+
+return 0;
+				]]>
+			</c:CreateProcedureSQL>
+		</SaveImplementation>
+
+	</SPDataForm>
+
+	<!-- describe fields on the form, which correspond to parameters on the SP.  Note that system paramters 
+	like the record ID, DATALOADED, TSLONG, and CURRENTAPPUSERID need not be listed. -->
+	<FormMetaData xmlns="bb_appfx_commontypes">
+		<FormFields>
+			<FormField FieldID="OPERATION" Caption="Operation" DataType="Integer">
+				<ValueList>
+					<Items>
+						<Item>
+							<Value>1</Value>
+							<Label>Add</Label>
+						</Item>
+						<Item>
+							<Value>2</Value>
+							<Label>Remove</Label>
+						</Item>
+					</Items>
+				</ValueList>
+			</FormField>
+			<FormField FieldID="TEMPLATE" Caption="Permission Template" DefaultValueText="" DataType="Guid" Hidden="true">
+				
+			</FormField>
+			<FormField FieldID="USERLIST" Caption="Choose Users" DataType="XML">
+				<Collection RenderStyle="CheckBoxList">
+					<Fields>
+						<FormField Caption="ID" DataType="Guid" FieldID="ID" Hidden="true" />
+						<FormField Caption="UserName" DataType="String" ReadOnly="1" FieldID="USERNAME" />
+						<FormField Caption="Selected" DataType="Boolean" FieldID="SELECTED" />
+					</Fields>
+				</Collection>
+			</FormField>
+      <FormField FieldID="SITEFILTERMODE" DataType="Integer" Caption="Site Filter Mode">
+        <ValueList>
+          <Items>
+            <Item>
+              <Value>1</Value>
+              <Label>App User's Site</Label>
+            </Item>
+            <Item>
+              <Value>2</Value>
+              <Label>Selected Sites</Label>
+            </Item>
+          </Items>
+        </ValueList>
+      </FormField>
+			<FormField FieldID="SITELIST" Caption="Choose Sites" DataType="XML">
+				<Collection IDField="ID" RenderStyle="CheckBoxList" ViewMode="Grid">
+					<Fields>
+						<FormField Caption="ID" DataType="Guid" FieldID="ID" Hidden="true" />
+						<FormField Caption="SiteName" DataType="String" ReadOnly="1" FieldID="SITENAME" />
+						<FormField Caption="Selected" DataType="Boolean" FieldID="SELECTED" />
+					</Fields>
+				</Collection>
+			</FormField>
+			<FormField FieldID="ROLELIST" Caption="Choose Roles" DataType="XML">
+				<Collection IDField="ID" RenderStyle="CheckBoxList" ViewMode="Grid">
+					<Fields>
+						<FormField Caption="ID" DataType="Guid" FieldID="ID" Hidden="true" />
+						<FormField Caption="RoleName" DataType="String" ReadOnly="1" FieldID="ROLENAME" />
+						<FormField Caption="Selected" DataType="Boolean" FieldID="SELECTED" />
+					</Fields>
+				</Collection>
+			</FormField>
+		</FormFields>
+
+        <WebUIComponent>
+            <UIModel AssemblyName="Blackbaud.CustomFX.MassUserRoleAssignment.UIModel.dll" ClassName="Blackbaud.CustomFX.MassUserRoleAssignment.UIModel.MultiUserSecurityAssignmentEditDataFormUIModel" />
+            <WebUI>
+                <ExternalResource Url="browser/htmlforms/custom/blackbaud.customfx.massuserroleassignment/MultiUserSecurityAssignmentEditDataForm.html" />
+            </WebUI>
+        </WebUIComponent>
+
+        
+    <UIActions>
+      <UIAction ActionID="SELECTALLSITES" Caption="Select all sites" />
+      <UIAction ActionID="DESELECTALLSITES" Caption="Deselect all sites" />
+      <UIAction ActionID="SELECTALLROLES" Caption="Select all roles" />
+      <UIAction ActionID="DESELECTALLROLES" Caption="Deselect all roles" />
+      <UIAction ActionID="SELECTALLUSERS" Caption="Select all users" />
+      <UIAction ActionID="DESELECTALLUSERS" Caption="Deselect all users" />
+    </UIActions>
+        
+	</FormMetaData>
+
+</EditDataFormTemplateSpec>

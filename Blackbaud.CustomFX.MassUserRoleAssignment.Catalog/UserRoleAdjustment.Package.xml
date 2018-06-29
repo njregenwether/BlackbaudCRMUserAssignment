@@ -1,0 +1,60 @@
+<PackageSpec 
+    xmlns="bb_appfx_package"
+    xmlns:c="bb_appfx_commontypes"
+    ID="6ea96f54-3222-4ab2-9c8d-ab6d5838e125"
+    Name="User Role Adjustment Package"
+    Description="Package for mass editing user's roles and sites."
+    Author="Nolan Regenwether"
+    >
+	
+  <c:DependencyList>
+      <c:Dependency CatalogAssembly="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.dll" CatalogItem="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.USP_GETROLELISTXML.xml" />
+      <c:Dependency CatalogAssembly="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.dll" CatalogItem="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.USP_GETSITELISTXML.xml" />
+      <c:Dependency CatalogAssembly="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.dll" CatalogItem="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.USP_GETUSERLISTXML.xml" />
+      <c:Dependency CatalogAssembly="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.dll" CatalogItem="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.AllSitesRoles.Table.xml" />
+      <c:Dependency CatalogAssembly="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.dll" CatalogItem="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.NoSitesRoles.Table.xml" />
+      <c:Dependency CatalogAssembly="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.dll" CatalogItem="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.AllSitesRolesDelete.RecordOperation.xml" />
+      <c:Dependency CatalogAssembly="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.dll" CatalogItem="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.NoSitesRolesDelete.RecordOperation.xml" />
+      <c:Dependency CatalogAssembly="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.dll" CatalogItem="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.AllSitesRoles.DataList.xml" />
+      <c:Dependency CatalogAssembly="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.dll" CatalogItem="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.NoSitesRoles.DataList.xml" />
+      <c:Dependency CatalogAssembly="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.dll" CatalogItem="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.AllSitesRoles.Add.xml" />
+      <c:Dependency CatalogAssembly="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.dll" CatalogItem="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.NoSitesRoles.Add.xml" />
+      <c:Dependency CatalogAssembly="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.dll" CatalogItem="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.MakeUserLike.Edit.xml" />
+      <c:Dependency CatalogAssembly="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.dll" CatalogItem="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.UserRoleAdjustment.Edit.xml" />
+      <c:Dependency CatalogAssembly="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.dll" CatalogItem="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.UserRoleAssignmentSummarySection.View.xml" />
+      <c:Dependency CatalogAssembly="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.dll" CatalogItem="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.AppUsersRoles.Query.xml" />
+      <c:Dependency CatalogAssembly="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.dll" CatalogItem="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.UserRoleAdjustment.Page.xml" />
+      <c:Dependency CatalogAssembly="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.dll" CatalogItem="Blackbaud.CustomFX.MassUserRoleAssignment.Catalog.UserRoleAdjustment.Task.xml" />
+  </c:DependencyList>
+
+
+
+  <AlterExistingPages xmlns="bb_appfx_pagedefinition">
+    <AlterPages>
+      <AlterPage PageID="a51e42f2-5478-441c-8735-310c0f7a0be7">
+        <AlterPageActionGroups>
+          <AlterPageActionGroup PageActionGroupID="4ad0074e-64ce-4a02-aa23-e01bfb28ccef" >
+            <AlterActions>
+              <AddAction Sequence="99">
+                <Action ID="accc28bd-e1cd-45a1-9e44-15e9f6cb1f97" Enabled="True" Caption="Assign Roles to Users"  ImageKey="catalog:Blackbaud.AppFx.Security.Catalog.dll,Blackbaud.AppFx.Security.Catalog.application_users.png" ToolTipText="Add system roles and sites to multiple users at the same time.">
+                  <c:ShowDataForm DataFormID="f08e51b2-dbdb-435f-8c4a-ed4644913aac"></c:ShowDataForm>
+                </Action>
+              </AddAction>
+            </AlterActions>
+          </AlterPageActionGroup>
+        </AlterPageActionGroups>
+      </AlterPage>
+      <AlterPage PageID="ae1deedd-6b2d-4c03-b4d4-f74e583a6ad7">
+        <AlterOrAddPageActionGroups>
+          <AlterOrAddPageActionGroup ID="a63ff939-b769-473d-9801-1a73cb42bb08" Caption="Tasks" Visible="True">
+            <AddAction Sequence="99">
+              <Action ID="1d7050fe-8f45-4565-b082-298313b26a7d" Enabled="True" Caption="Assign Roles to Users"  ImageKey="catalog:Blackbaud.AppFx.Security.Catalog.dll,Blackbaud.AppFx.Security.Catalog.application_users.png" ToolTipText="Add system roles and sites to multiple users at the same time.">
+                <c:ShowDataForm DataFormID="f08e51b2-dbdb-435f-8c4a-ed4644913aac"></c:ShowDataForm>
+              </Action>
+            </AddAction>
+          </AlterOrAddPageActionGroup>
+        </AlterOrAddPageActionGroups>
+      </AlterPage>
+    </AlterPages>
+  </AlterExistingPages>
+</PackageSpec>

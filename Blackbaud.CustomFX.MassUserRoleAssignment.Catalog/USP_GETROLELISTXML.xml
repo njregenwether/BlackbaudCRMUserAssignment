@@ -1,0 +1,35 @@
+﻿<SQLStoredProcedureSpec
+	xmlns="bb_appfx_sqlstoredprocedure"
+	xmlns:c="bb_appfx_commontypes" 
+	ID="c8e440f5-216a-4eb9-82a2-db2434ca9a5b"
+	Name="Get Role List XML"
+	Description="Gets list of Roles"
+	Author="Nolan Regenwether"
+	SPName="USR_USP_GETROLELISTXML"
+	>
+
+	<CreateProcedureSQL>
+		<![CDATA[
+create procedure dbo.USR_USP_GETROLELISTXML
+(
+	@ROLELIST xml = null output
+)
+as 
+begin
+	SELECT @ROLELIST = (SELECT  ID, NAME as ROLENAME, CAST(0 as bit) SELECTED, CAST(null as uniqueidentifier) as SITE 
+	FROM 
+	( 
+	SELECT TOP 100 PERCENT ID, NAME 
+	FROM dbo.SYSTEMROLE
+	WHERE NAME IS NOT NULL AND NAME <> '' 
+    AND ISSYSTEM = 0
+	ORDER BY NAME ASC
+	) sdf
+	ORDER BY NAME ASC
+	FOR XML PATH('Item'), Root('ROLELIST')
+	)
+end
+		]]>
+	</CreateProcedureSQL>
+
+</SQLStoredProcedureSpec>

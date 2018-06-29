@@ -1,0 +1,35 @@
+<RecordOperationSpec 
+    xmlns:c="bb_appfx_commontypes"
+    ID="6400714b-7e78-45d1-ae5b-e5d1bec3173d"
+    Name="Delete Role from No Sites Role Table"
+    Description="Delete a role from the no sites table."
+    Author="Nolan Regenwether"
+    RecordType="System Role"
+    OperationType="Delete"
+    xmlns="bb_appfx_recordoperation"
+    >
+    <SPRecord>
+        <SPOperationImplementation SPName="USR_USP_NOSITESROLES_DELETE">
+            <c:CreateProcedureSQL>
+<![CDATA[
+create procedure dbo.USR_USP_NOSITESROLES_DELETE
+(
+	@ID uniqueidentifier,
+	@CHANGEAGENTID uniqueidentifier
+)
+as begin
+	--check deletion rules, if any
+
+	-- use the system generated delete routine to allow proper recording of the deleting agent
+	exec USP_USR_NOSITESROLES_DELETEBYID_WITHCHANGEAGENTID @ID, @CHANGEAGENTID
+	return 0;
+	
+end
+]]>
+</c:CreateProcedureSQL>
+        </SPOperationImplementation>
+    </SPRecord>
+    <Prompt>
+        <StandardPrompt Text="Are you sure you want to delete this role?" />
+    </Prompt>
+</RecordOperationSpec>

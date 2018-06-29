@@ -1,0 +1,20 @@
+﻿<TaskSpec
+	xmlns="bb_appfx_task"
+	xmlns:c="bb_appfx_commontypes" 
+	ID="2fe3465c-976b-4cab-b1bc-33bbccf85000"
+	Name="User Role Adjustment"
+	Description="User Role Adjustment"
+	Author="Nolan Regenwether"
+	ImageKey="catalog:Blackbaud.AppFx.Security.Catalog.dll,Blackbaud.AppFx.Security.Catalog.application_users.png"
+  FunctionalAreaID="64bbf407-7062-4f63-bc7c-e947f3eef6aa"
+  Sequence="23"
+  Folder="Security"
+  FolderImageKey="catalog:Blackbaud.AppFx.Security.Catalog.dll,Blackbaud.AppFx.Security.Catalog.key_32.png"
+  FolderTaskGroup="Administration"
+  FolderTaskGroupImageKey=""
+	>
+
+	<!-- indicate what this task should do (navigate to a page, show a form, etc. -->
+	<c:ShowPage PageID="3233efc0-fb4d-4d2e-b926-cfa89546ee9d" />
+
+</TaskSpec>
